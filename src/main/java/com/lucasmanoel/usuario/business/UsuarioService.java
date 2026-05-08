@@ -9,7 +9,6 @@ import com.lucasmanoel.usuario.infrastructure.exceptions.UnauthorizedException;
 import com.lucasmanoel.usuario.infrastructure.repository.UsuarioRepository;
 import com.lucasmanoel.usuario.infrastructure.security.JwtUtil;
 import lombok.*;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,19 +16,13 @@ import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Service;
 
-@Controller
-@Getter
-@Setter
-@AllArgsConstructor
 @RequiredArgsConstructor
 @Service
 
 public class UsuarioService {
 
-    private final UsuarioService usuarioservice;
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
     private final UsuarioConverter usuarioConverter;
@@ -69,7 +62,7 @@ public class UsuarioService {
     }
 
     public boolean verificaEmail(String email){
-        return usuarioRepository.existesByEmail(email);
+        return usuarioRepository.existsByEmail(email);
     }
 
     public UsuarioDTO buscaUsuarioPorEmail(String email){
