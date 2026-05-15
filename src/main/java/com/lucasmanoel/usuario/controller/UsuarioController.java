@@ -35,14 +35,15 @@ public class UsuarioController {
     @ApiResponse(responseCode = "400", description = "Dados inválidos")
     @ApiResponse(responseCode = "401", description = "Usuário não autenticado")
     @ApiResponse(responseCode = "500", description = "Erro interno no servidor")
-    public ResponseEntity<UsuarioDTO> alteraUsuario(@RequestHeader("Authorization") String token, @RequestBody UsuarioDTO dto){
-        return ResponseEntity.ok(usuarioService.alteraUsuario(token, dto));
+    public ResponseEntity<UsuarioDTO> alteraUsuario(@RequestBody UsuarioDTO dto){
+        return ResponseEntity.ok(usuarioService.alteraUsuario(dto));
     }
 
     @GetMapping
     @Operation(summary = "Busca usuario", description = "Localiza usuario buscando pelo email")
-    @ApiResponse(responseCode = "200", description = "Usuario encontrado com sucesso")
+    @ApiResponse(responseCode = "200", description = "Usuário encontrado com sucesso")
     @ApiResponse(responseCode = "400", description = "Dados inválidos")
+    @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
     @ApiResponse(responseCode = "500", description = "Erro interno no servidor")
     public ResponseEntity<UsuarioDTO> buscaUsuarioPorEmail(@RequestParam String email){
         return ResponseEntity.ok(usuarioService.buscaUsuarioPorEmail(email));
