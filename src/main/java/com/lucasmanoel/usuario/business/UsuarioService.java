@@ -11,12 +11,16 @@ import com.lucasmanoel.usuario.infrastructure.security.JwtUtil;
 import lombok.*;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -75,13 +79,18 @@ public class UsuarioService {
         usuarioRepository.deleteByEmail(email);
     }
 
-    public UsuarioDTO alteraUsuario(String token, UsuarioDTO dto){
-        String email = jwtUtil.extrairEmailToken(token.substring(7));
-        dto.setSenha(dto.getSenha() != null ? passwordEncoder.encode(dto.getSenha()) : null);
+    public UsuarioDTO alteraUsuario(UsuarioDTO dto){
+        String email = Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
+                .map(Authentication::getName)
+                .orElseThrow(() -> new InsufficientAuthenticationException("Usuário não autenticado"));
+
         UsuarioEntity entity = usuarioRepository.findByEmail(email).orElseThrow(
                 () ->  new ResourceNotFoundException(emailNaoEncontrado)
         );
         UsuarioEntity entity2 = usuarioConverter.alterarUsuario(dto, entity);
+        if (dto.getSenha() != null && !dto.getSenha().isBlank()) {
+            entity.setSenha(passwordEncoder.encode(dto.getSenha()));
+        }
         return usuarioConverter.parausuarioDTO(usuarioRepository.save(entity2));
     }
 
