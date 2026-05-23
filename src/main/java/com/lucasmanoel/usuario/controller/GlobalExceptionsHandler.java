@@ -1,6 +1,6 @@
 package com.lucasmanoel.usuario.controller;
 
-import com.lucasmanoel.usuario.infrastructure.exceptions.ConflictExeception;
+import com.lucasmanoel.usuario.infrastructure.exceptions.ConflictException;
 import com.lucasmanoel.usuario.infrastructure.exceptions.ResourceNotFoundException;
 import com.lucasmanoel.usuario.infrastructure.exceptions.UnauthorizedException;
 import com.lucasmanoel.usuario.infrastructure.exceptions.dto.ErrorResponseDTO;
@@ -25,8 +25,8 @@ public class GlobalExceptionsHandler {
         ));
     }
 
-    @ExceptionHandler(ConflictExeception.class)
-    public ResponseEntity<ErrorResponseDTO> handlerConflictException(ConflictExeception exception, HttpServletRequest request){
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<ErrorResponseDTO> handlerConflictException(ConflictException exception, HttpServletRequest request){
         return  ResponseEntity.status(HttpStatus.CONFLICT).body(buildErro(HttpStatus.CONFLICT.value(),
                 exception.getMessage(),
                 "CONFLICT",
