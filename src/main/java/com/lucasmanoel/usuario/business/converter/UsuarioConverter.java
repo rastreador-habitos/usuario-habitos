@@ -1,17 +1,17 @@
 package com.lucasmanoel.usuario.business.converter;
 
 import com.lucasmanoel.usuario.business.dto.UsuarioDTO;
+import com.lucasmanoel.usuario.business.dto.UsuarioDTOResponse;
 import com.lucasmanoel.usuario.infrastructure.entity.UsuarioEntity;
 import org.springframework.stereotype.Component;
 
 @Component
 public class UsuarioConverter {
 
-    public UsuarioDTO parausuarioDTO(UsuarioEntity entity) {
-        return UsuarioDTO.builder()
+    public UsuarioDTOResponse paraUsuarioDTOResponse(UsuarioEntity entity) {
+        return UsuarioDTOResponse.builder()
                 .nome(entity.getNome())
                 .email(entity.getEmail())
-                .senha(entity.getSenha())
                 .build();
     }
 

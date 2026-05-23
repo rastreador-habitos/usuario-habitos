@@ -2,8 +2,10 @@ package com.lucasmanoel.usuario.business;
 
 import com.lucasmanoel.usuario.business.converter.UsuarioConverter;
 import com.lucasmanoel.usuario.business.dto.UsuarioDTO;
+import com.lucasmanoel.usuario.business.dto.UsuarioDTOResponse;
+import com.lucasmanoel.usuario.business.dto.UsuarioLoginRequest;
 import com.lucasmanoel.usuario.infrastructure.entity.UsuarioEntity;
-import com.lucasmanoel.usuario.infrastructure.exceptions.ConflictExeception;
+import com.lucasmanoel.usuario.infrastructure.exceptions.ConflictException;
 import com.lucasmanoel.usuario.infrastructure.exceptions.ResourceNotFoundException;
 import com.lucasmanoel.usuario.infrastructure.exceptions.UnauthorizedException;
 import com.lucasmanoel.usuario.infrastructure.repository.UsuarioRepository;
@@ -11,16 +13,12 @@ import com.lucasmanoel.usuario.infrastructure.security.JwtUtil;
 import lombok.*;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
@@ -35,19 +33,19 @@ public class UsuarioService {
 
     String emailNaoEncontrado = "Email não encontrado";
 
-    public UsuarioDTO cadastraUsuario(UsuarioDTO dto){
+    public UsuarioDTOResponse cadastraUsuario(UsuarioDTO dto){
         emailExiste(dto.getEmail());
         dto.setSenha(passwordEncoder.encode(dto.getSenha()));
         UsuarioEntity entity = usuarioConverter.paraUsuarioEntity(dto);
         usuarioRepository.save(entity);
-        return usuarioConverter.parausuarioDTO(entity);
+        return usuarioConverter.paraUsuarioDTOResponse(entity);
 
     }
 
-    public String login(UsuarioDTO dto){
+    public String login(UsuarioLoginRequest dto){
         try {
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getSenha())
+                    new UsernamePasswordAuthenticationToken(dto.email(), dto.senha())
             );
             return "Bearer " + jwtUtil.generateToken(authentication.getName());
         }catch (BadCredentialsException | UsernameNotFoundException | AuthorizationDeniedException e){
@@ -55,43 +53,43 @@ public class UsuarioService {
         }
     }
 
-    public void emailExiste(String email){
-        try {
-            if (verificaEmail(email)){
-                throw new ConflictExeception("Email já cadastrado");
-            }
-        } catch (ConflictExeception e) {
-            throw new RuntimeException(e.getCause());
+    private void emailExiste(String email) {
+        if (usuarioRepository.existsByEmail(email)) {
+            throw new ConflictException("Email já cadastrado");
         }
     }
 
-    public boolean verificaEmail(String email){
-        return usuarioRepository.existsByEmail(email);
-    }
 
-    public UsuarioDTO buscaUsuarioPorEmail(String email){
-        return usuarioConverter.parausuarioDTO(usuarioRepository.findByEmail(email).orElseThrow(
+    public UsuarioDTOResponse buscaUsuarioPorEmail(String token, String email){
+        UsuarioEntity entity = usuarioRepository.findByEmail(email).orElseThrow(
                 () -> new ResourceNotFoundException(emailNaoEncontrado)
-        ));
+        );
+        if (!jwtUtil.extrairEmailToken(token.substring(7)).equals(entity.getEmail())){
+            throw new UnauthorizedException("Usuario não autenticado");
+        }
+        return usuarioConverter.paraUsuarioDTOResponse(entity);
     }
 
-    public void deletaUsuarioPorEmail(String email){
+    public void deletaUsuarioPorEmail(String token, String email){
+        UsuarioEntity entity = usuarioRepository.findByEmail(email).orElseThrow(
+                () -> new ResourceNotFoundException(emailNaoEncontrado)
+        );
+        if (!jwtUtil.extrairEmailToken(token.substring(7)).equals(entity.getEmail())){
+            throw new UnauthorizedException("Usuario não autenticado");
+        }
         usuarioRepository.deleteByEmail(email);
     }
 
-    public UsuarioDTO alteraUsuario(UsuarioDTO dto){
-        String email = Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
-                .map(Authentication::getName)
-                .orElseThrow(() -> new InsufficientAuthenticationException("Usuário não autenticado"));
-
+    public UsuarioDTOResponse alteraUsuario(String token, UsuarioDTO dto){
+        String email = jwtUtil.extrairEmailToken(token.substring(7));
         UsuarioEntity entity = usuarioRepository.findByEmail(email).orElseThrow(
                 () ->  new ResourceNotFoundException(emailNaoEncontrado)
         );
-        UsuarioEntity entity2 = usuarioConverter.alterarUsuario(dto, entity);
+        UsuarioEntity atualizada = usuarioConverter.alterarUsuario(dto, entity);
         if (dto.getSenha() != null && !dto.getSenha().isBlank()) {
-            entity.setSenha(passwordEncoder.encode(dto.getSenha()));
+            atualizada.setSenha(passwordEncoder.encode(dto.getSenha()));
         }
-        return usuarioConverter.parausuarioDTO(usuarioRepository.save(entity2));
+        return usuarioConverter.paraUsuarioDTOResponse(usuarioRepository.save(atualizada));
     }
 
 
