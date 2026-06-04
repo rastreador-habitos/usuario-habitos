@@ -70,7 +70,7 @@ public class UsuarioService {
         return usuarioConverter.paraUsuarioDTOResponse(entity);
     }
 
-    public void deletaUsuarioPorEmail(String token, String email){
+    public void deletaUsuario(String token, String email){
         UsuarioEntity entity = usuarioRepository.findByEmail(email).orElseThrow(
                 () -> new ResourceNotFoundException(emailNaoEncontrado)
         );
