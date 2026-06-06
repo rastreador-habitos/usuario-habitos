@@ -28,7 +28,7 @@ public class UsuarioController {
     @ApiResponse(responseCode = "201", description = "Usuario cadastrado com sucesso")
     @ApiResponse(responseCode = "400", description = "Dados inválidos para a criação do usuario")
     @ApiResponse(responseCode = "500", description = "Erro interno no servidor")
-    public ResponseEntity<UsuarioDTOResponse> cadastraUsuario(@RequestBody UsuarioDTO dto){
+    public ResponseEntity<UsuarioDTOResponse> cadastraUsuario(@RequestBody UsuarioDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(usuarioService.cadastraUsuario(dto));
     }
 
@@ -38,7 +38,7 @@ public class UsuarioController {
     @ApiResponse(responseCode = "400", description = "Dados inválidos")
     @ApiResponse(responseCode = "401", description = "Usuário não autenticado")
     @ApiResponse(responseCode = "500", description = "Erro interno no servidor")
-    public ResponseEntity<UsuarioDTOResponse> alteraUsuario(@RequestHeader("Authorization") String token, @RequestBody UsuarioDTO dto){
+    public ResponseEntity<UsuarioDTOResponse> alteraUsuario(@RequestHeader("Authorization") String token, @RequestBody UsuarioDTO dto) {
         return ResponseEntity.ok(usuarioService.alteraUsuario(token, dto));
     }
 
@@ -48,7 +48,7 @@ public class UsuarioController {
     @ApiResponse(responseCode = "400", description = "Dados inválidos")
     @ApiResponse(responseCode = "404", description = "Usuário não encontrado")
     @ApiResponse(responseCode = "500", description = "Erro interno no servidor")
-    public ResponseEntity<UsuarioDTOResponse> buscaUsuarioPorEmail(@RequestHeader("Authorization") String token, @RequestParam String email){
+    public ResponseEntity<UsuarioDTOResponse> buscaUsuarioPorEmail(@RequestHeader("Authorization") String token, @RequestParam String email) {
         return ResponseEntity.ok(usuarioService.buscaUsuarioPorEmail(token, email));
     }
 
@@ -57,7 +57,7 @@ public class UsuarioController {
     @ApiResponse(responseCode = "200", description = "Usuario logado com sucesso")
     @ApiResponse(responseCode = "401", description = "Dados inválidos")
     @ApiResponse(responseCode = "500", description = "Erro interno no servidor")
-    public ResponseEntity<String> login(@RequestBody UsuarioLoginRequest dto){
+    public ResponseEntity<String> login(@RequestBody UsuarioLoginRequest dto) {
         return ResponseEntity.ok(usuarioService.login(dto));
     }
 
@@ -67,7 +67,7 @@ public class UsuarioController {
     @ApiResponse(responseCode = "403", description = "Dados inválidos")
     @ApiResponse(responseCode = "401", description = "Usuário não autenticado")
     @ApiResponse(responseCode = "500", description = "Erro interno no servidor")
-    public  ResponseEntity<Void> deletaUsuario(@RequestHeader("Authorization") String token, @PathVariable String email){
+    public ResponseEntity<Void> deletaUsuario(@RequestHeader("Authorization") String token, @PathVariable String email) {
         usuarioService.deletaUsuario(token, email);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
